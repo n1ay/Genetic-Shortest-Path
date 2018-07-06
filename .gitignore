@@ -1,0 +1,12 @@
+#IDE files
+.idea/
+Genetic.cbp
+
+#build
+cmake-build-debug/
+CMakeCache.txt
+CMakeFiles
+cmake_install.cmake
+Makefile
+Genetic
+
