@@ -38,8 +38,48 @@ void test_reproduce(void) {
     }
 }
 
+void test_mutate(void) {
+    population population1;
+    population1.genome_length=8;
+
+    individual individual1, individual2;
+    individual1.population = &population1;
+    individual2.population = &population1;
+
+    int genome1[] = {1,2,3,4,5,6,7,8};
+    int genome2[] = {1,2,3,4,5,6,7,8};
+    individual1.genome = genome1;
+    individual2.genome = genome2;
+
+    int mutated_gene = mutate(&individual1);
+
+    ASSERT_EQUALS(individual1.genome[mutated_gene], !(individual2.genome[mutated_gene]));
+    for(int i=0; i<population1.genome_length; i++) {
+        if(i!=mutated_gene)
+            ASSERT_EQUALS(individual1.genome[i], individual2.genome[i]);
+    }
+}
+
+void test_get_fitness(void) {
+    ASSERT_FAIL
+}
+
+void test_unittest(void) {
+    ASSERT_EQUALS(1+1, 2);
+    ASSERT_GREATER(0, -2);
+    ASSERT_GREATER_EQUALS(0, -2);
+    ASSERT_GREATER_EQUALS(-2, -2);
+    ASSERT_LESS(0, 2);
+    ASSERT_LESS_EQUALS(0, 2);
+    ASSERT_LESS_EQUALS(-2, -2);
+    ASSERT_NOT_EQUALS(-2, 2);
+}
+
 void test(void) {
+    TEST(test_unittest);
     TEST(test_reproduce);
+    TEST(test_mutate);
+    TEST(test_get_fitness);
 }
 
 #pragma clang diagnostic pop

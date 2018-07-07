@@ -30,3 +30,14 @@ individual* reproduce(individual individual1, individual individual2, int crosso
 
     return childs;
 }
+
+int mutate(individual* individual1) {
+    int gene_to_mutate = randombytes_uniform((const uint32_t) ((individual1->population)->genome_length));
+    individual1->genome[gene_to_mutate] = !(individual1->genome[gene_to_mutate]);
+
+    return gene_to_mutate;
+}
+
+int get_fitness(individual individual1) {
+    return 0;
+}

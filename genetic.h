@@ -22,5 +22,6 @@ typedef struct population {
 } population;
 
 individual* reproduce(individual individual1, individual individual2, int crossover_index);
-
+int mutate(individual* individual1);
+int get_fitness(individual);
 #endif //GENETIC_GENETIC_H

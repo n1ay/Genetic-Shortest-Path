@@ -78,6 +78,10 @@
         SET_ERROR_FLAG; \
     }
 
+#define ASSERT_FAIL \
+    TEST_FAILED_MSG("Assertion failed on demand\n"); \
+    SET_ERROR_FLAG;
+
 #define ASSERT_EQUAL ASSERT_EQUALS
 #define ASSERT_NOT_EQUAL ASSERT_EQUALS
 #define ASSERT_GREATER_EQUAL ASSERT_GREATER_EQUALS
