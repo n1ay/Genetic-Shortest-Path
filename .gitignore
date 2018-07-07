@@ -2,11 +2,12 @@
 .idea/
 Genetic.cbp
 
-#build
+#build-related-files but unnecessary to build
 cmake-build-debug/
 CMakeCache.txt
 CMakeFiles
 cmake_install.cmake
 Makefile
 Genetic
+*.a
 

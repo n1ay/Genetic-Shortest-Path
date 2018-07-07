@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <sodium.h>
 #include "graph.h"
+#include "genetic_test.h"
 
 graph build_graph() {
     graph g;
@@ -36,7 +38,13 @@ graph build_graph() {
     return g;
 }
 
+#define PERFORM_TESTS 1
+
 int main() {
+    sodium_init();
+
+    if(PERFORM_TESTS == 1)
+        test();
 
     graph g = build_graph();
     int vertices = 7;
