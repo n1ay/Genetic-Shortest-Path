@@ -8,6 +8,6 @@ add_library(sodium_random main.c genetic.c)
 target_link_libraries(sodium_random -lsodium)
 
 add_executable(Genetic main.c graph.h genetic.c genetic.h
-    genetic_test.c genetic_test.h unittest.h)
+    genetic_test.c genetic_test.h unittest.h graph.c graph_test.c graph_test.h)
 
 target_link_libraries(Genetic sodium_random)

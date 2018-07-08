@@ -7,18 +7,32 @@
 
 typedef struct {
     int id;
-} vertex;
+} Vertex;
 
 typedef struct {
     int id;
-    vertex* from;
-    vertex* to;
+    Vertex* from;
+    Vertex* to;
     int weight;
-} edge;
+} Edge;
 
 typedef struct {
-    vertex* vertices;
-    edge* edges;
-} graph;
+    int id_from;
+    int id_to;
+} Path;
 
+typedef struct {
+    Vertex* vertices;
+    int vertices_number;
+
+    Edge* edges;
+    int edges_number;
+
+    int bidirectional;
+    Path path;
+} Graph;
+
+Graph build_exemplary_graph();
+int get_all_weights_sum(Graph graph);
+int edge_exists(Edge edge, Graph graph);
 #endif //GENETIC_GRAPH_H

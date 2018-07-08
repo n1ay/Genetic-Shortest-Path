@@ -5,23 +5,31 @@
 #ifndef GENETIC_GENETIC_H
 #define GENETIC_GENETIC_H
 
-struct population;
+#include "graph.h"
+
+struct Population;
 
 typedef struct {
     int* genome;
-    struct population* population;
+    struct Population* population;
 
-} individual;
+} Individual;
 
-typedef struct population {
+typedef struct Population {
     int genome_length;
     float mutation_rate;
     int population_size;
-    individual* individuals;
-    individual* next_iteration_individuals;
-} population;
+    Individual* individuals;
+    Individual* next_iteration_individuals;
 
-individual* reproduce(individual individual1, individual individual2, int crossover_index);
-int mutate(individual* individual1);
-int get_fitness(individual);
+    //instance of a problem
+    Graph* graph;
+} Population;
+
+Individual* reproduce(Individual individual1, Individual individual2, int crossover_index);
+int mutate(Individual* individual);
+int get_fitness(Individual);
+int get_impossible_transition_penalty(Population);
+int get_start_penalty(Population);
+int get_destination_penalty(Population);
 #endif //GENETIC_GENETIC_H
