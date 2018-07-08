@@ -9,6 +9,7 @@
 void test_get_all_weights_sum(void) {
     Graph graph = build_exemplary_graph();
     ASSERT_EQUALS(get_all_weights_sum(graph), 15);
+    delete_graph(graph);
 }
 
 void test_get_edge_weight(void) {
@@ -52,9 +53,40 @@ void test_get_edge_weight(void) {
         ASSERT_EQUALS(get_edge_weight(edges_reversed[i], graph), -1);
         ASSERT_EQUALS(get_edge_weight(edges_fake[i], graph), -1);
     }
+
+    delete_graph(graph);
+    free(edges);
+    free(edges_fake);
+    free(edges_reversed);
+    free(vertices);
+}
+
+void test_build_exemplary_graph(void) {
+    int vertices_number = 7;
+    int edges_number = 8;
+    Graph graph = build_exemplary_graph();
+    ASSERT_EQUALS(graph.vertices_number, vertices_number);
+    ASSERT_EQUALS(graph.edges_number, edges_number);
+    ASSERT_EQUALS(graph.edges[0].from->id, graph.vertices[0].id);
+    ASSERT_EQUALS(graph.edges[0].to->id, graph.vertices[1].id);
+    ASSERT_EQUALS(graph.edges[1].from->id, graph.vertices[0].id);
+    ASSERT_EQUALS(graph.edges[1].to->id, graph.vertices[2].id);
+    ASSERT_EQUALS(graph.edges[2].from->id, graph.vertices[1].id);
+    ASSERT_EQUALS(graph.edges[2].to->id, graph.vertices[3].id);
+    ASSERT_EQUALS(graph.edges[3].from->id, graph.vertices[2].id);
+    ASSERT_EQUALS(graph.edges[3].to->id, graph.vertices[3].id);
+    ASSERT_EQUALS(graph.edges[4].from->id, graph.vertices[3].id);
+    ASSERT_EQUALS(graph.edges[4].to->id, graph.vertices[4].id);
+    ASSERT_EQUALS(graph.edges[5].from->id, graph.vertices[3].id);
+    ASSERT_EQUALS(graph.edges[5].to->id, graph.vertices[5].id);
+    ASSERT_EQUALS(graph.edges[6].from->id, graph.vertices[4].id);
+    ASSERT_EQUALS(graph.edges[6].to->id, graph.vertices[6].id);
+    ASSERT_EQUALS(graph.edges[7].from->id, graph.vertices[5].id);
+    ASSERT_EQUALS(graph.edges[7].to->id, graph.vertices[6].id);
 }
 
 void graph_test(void) {
     TEST(test_get_all_weights_sum);
     TEST(test_get_edge_weight);
+    TEST(test_build_exemplary_graph);
 }

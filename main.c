@@ -4,6 +4,7 @@
 #include "graph.h"
 #include "genetic_test.h"
 #include "graph_test.h"
+#include "genetic.h"
 
 void tests(void) {
     genetic_test();
@@ -18,13 +19,10 @@ int main(void) {
     if(PERFORM_TESTS == 1)
         tests();
 
-    Graph g = build_exemplary_graph();
+    Graph graph = build_exemplary_graph();
+    Population* population = create_population(&graph, 4*2, 0.05, 0.1);
 
-    for(int i=0; i<g.vertices_number; i++)
-        printf("%d\n", g.vertices[i].id);
-    printf("\n");
-    for(int i=0; i<g.edges_number; i++)
-        printf("%d\n", g.edges[i].weight);
 
+    delete_population(population);
     return 0;
 }

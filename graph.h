@@ -35,6 +35,7 @@ typedef struct {
 Vertex create_vertex(int id);
 Edge create_edge(int id, int weight, Vertex* from, Vertex* to);
 Graph build_exemplary_graph();
+void delete_graph(Graph graph);
 int get_all_weights_sum(Graph graph);
 int get_edge_weight(Edge edge, Graph graph);
 #endif //GENETIC_GRAPH_H

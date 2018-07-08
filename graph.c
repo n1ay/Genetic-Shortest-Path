@@ -31,8 +31,8 @@ Graph build_exemplary_graph() {
     }
 
     Path path;
-    path.id_from=0;
-    path.id_to=6;
+    path.id_from = 0;
+    path.id_to = 6;
     g.path = path;
 
     return g;
@@ -80,4 +80,9 @@ Edge create_edge(int id, int weight, Vertex* from, Vertex* to) {
     edge.to = to;
 
     return edge;
+}
+
+void delete_graph(Graph graph) {
+    free(graph.edges);
+    free(graph.vertices);
 }
