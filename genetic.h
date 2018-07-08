@@ -26,6 +26,7 @@ typedef struct Population {
     Graph* graph;
 } Population;
 
+Individual create_individual(int* genome, Population* population);
 Individual* reproduce(Individual individual1, Individual individual2, int crossover_index);
 int mutate(Individual* individual);
 int get_fitness(Individual);

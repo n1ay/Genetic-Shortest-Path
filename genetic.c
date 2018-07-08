@@ -19,14 +19,9 @@ Individual* reproduce(Individual individual1, Individual individual2, int crosso
     memcpy(genome2+crossover_index, individual1.genome+crossover_index, (size_t) (genome_length - crossover_index)*sizeof(int));
 
     Individual* children = malloc(2* sizeof(Individual));
-    Individual child1, child2;
-    child1.population = individual1.population;
-    child2.population = individual2.population;
-    child1.genome = genome1;
-    child2.genome = genome2;
 
-    children[0] = child1;
-    children[1] = child2;
+    children[0] = create_individual(genome1, individual1.population);
+    children[1] = create_individual(genome2, individual2.population);;
 
     return children;
 }
@@ -43,12 +38,38 @@ int mutate(Individual* individual) {
 
 int get_fitness(Individual individual) {
     int fitness = 0;
-    int weight;
-    if(individual.genome[0] != individual.population->graph->path.id_from)
-        fitness+=get_start_penalty(*individual.population);
+    int cheated = 0;
+    if(individual.genome[0] != individual.population->graph->path.id_from) {
+        fitness += get_start_penalty(*individual.population);
+        cheated = 1;
+    }
+
+    int destination_index=-1;
     for(int i=0; i<individual.population->graph->edges_number; i++) {
-        //TODO:
-        fitness+=0;
+        if(individual.population->graph->path.id_to == individual.genome[i])
+            destination_index = i;
+    }
+    if(destination_index == -1) {
+        fitness += get_destination_penalty(*individual.population);
+    }
+
+    int weight;
+    int reached_destination = 0;
+    for(int i=0; i<individual.population->genome_length-1; i++) {
+        Vertex from = create_vertex(individual.genome[i]), to = create_vertex(individual.genome[i+1]);
+        Edge edge = create_edge(0, 0, &from, &to);
+        weight = get_edge_weight(edge, *individual.population->graph);
+        if(weight == -1) {
+            fitness += get_impossible_transition_penalty(*individual.population);
+            cheated = 1;
+        } else {
+            fitness += weight;
+            if(individual.population->graph->path.id_to == to.id) {
+                reached_destination = 1;
+            }
+        }
+        if(reached_destination && !cheated)
+            break;
     }
     return fitness;
 }
@@ -63,4 +84,11 @@ int get_start_penalty(Population population) {
 
 int get_destination_penalty(Population population) {
     return get_impossible_transition_penalty(population)*population.graph->vertices_number;
+}
+
+Individual create_individual(int* genome, Population* population) {
+    Individual individual;
+    individual.genome = genome;
+    individual.population = population;
+    return individual;
 }
