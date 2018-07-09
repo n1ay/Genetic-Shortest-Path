@@ -17,8 +17,8 @@ typedef struct {
 
 typedef struct Population {
     int genome_length;
-    float mutation_rate;
-    float crossover_rate;
+    double mutation_rate;
+    double crossover_rate;
     int population_size;
     Individual* individuals;
 
@@ -26,17 +26,23 @@ typedef struct Population {
     Graph* graph;
 } Population;
 
-Population* create_population(Graph* graph, int population_size, float mutation_rate, float crossover_rate);
+double* generate_roulette(Population population);
+Population* create_population(Graph* graph, int population_size, double mutation_rate, double crossover_rate);
 void delete_population(Population* population);
-Individual* roulette_wheel_selection(Population* population);
-Individual* roulette_wheel_reproduction(Population* population, Individual* next_generation);
 Individual create_individual(int* genome, Population* population);
+void delete_individuals(Individual* individuals);
+
+int roulette_wheel_select_candidate(Population population, const double* roulette_ranges);
+void roulette_wheel_reproduction(Population* population);
+int* roulette_wheel_get_parents(Population* population);
 Individual* reproduce(Individual individual1, Individual individual2, int crossover_index);
 Individual* reproduce_apply_genetic_operators(Individual individual1, Individual individual2);
-void delete_individuals(Individual* individuals);
 int mutate(Individual* individual);
+
+Individual get_best_individual(Population);
 double get_fitness(Individual);
 int get_impossible_transition_penalty(Population);
 int get_start_penalty(Population);
 int get_destination_penalty(Population);
+double get_value_from_fitness(double fitness);
 #endif //GENETIC_GENETIC_H

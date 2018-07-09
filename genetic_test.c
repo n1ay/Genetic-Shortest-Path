@@ -8,7 +8,21 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include "genetic.h"
+#include "graph.h"
 #include <sodium.h>
+#include "utils.h"
+
+//just in case
+void test_unittest(void) {
+    ASSERT_EQUALS(1+1, 2);
+    ASSERT_GREATER(0, -2);
+    ASSERT_GREATER_EQUALS(0, -2);
+    ASSERT_GREATER_EQUALS(-2, -2);
+    ASSERT_LESS(0, 2);
+    ASSERT_LESS_EQUALS(0, 2);
+    ASSERT_LESS_EQUALS(-2, -2);
+    ASSERT_NOT_EQUALS(-2, 2);
+}
 
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wreturn-stack-address"
@@ -108,16 +122,58 @@ void test_reproduce_apply_genetic_operators(void) {
     free(children);
 }
 
-//just in case
-void test_unittest(void) {
-    ASSERT_EQUALS(1+1, 2);
-    ASSERT_GREATER(0, -2);
-    ASSERT_GREATER_EQUALS(0, -2);
-    ASSERT_GREATER_EQUALS(-2, -2);
-    ASSERT_LESS(0, 2);
-    ASSERT_LESS_EQUALS(0, 2);
-    ASSERT_LESS_EQUALS(-2, -2);
-    ASSERT_NOT_EQUALS(-2, 2);
+void test_create_population(void) {
+    Graph graph = build_exemplary_graph();
+    int population_size = 8;
+    Population* population = create_population(&graph, population_size, 0, 0);
+    ASSERT_EQUALS(population ->individuals[population_size-1].population->graph->edges[0].from->id, graph.vertices[0].id);
+    ASSERT_EQUALS(population ->individuals[population_size-1].population->graph->vertices[0].id, graph.edges[0].from->id);
+    ASSERT_EQUALS(population ->individuals[population_size-1].population->genome_length, graph.vertices_number);
+    delete_population(population);
+}
+
+void test_generate_roulette(void) {
+
+    Graph graph = build_exemplary_graph();
+    int population_size = 4;
+    Population* population = create_population(&graph, population_size, 0, 0);
+    double * roulette_ranges = generate_roulette(*population);
+    double fitness_values[] = {
+            get_fitness(population->individuals[0]),
+            get_fitness(population->individuals[1]),
+            get_fitness(population->individuals[2]),
+            get_fitness(population->individuals[3])};
+    double fitness_sum = fitness_values[0]+fitness_values[1]+fitness_values[2]+fitness_values[3];
+    ASSERT_EQUALS(round2(roulette_ranges[0]), 0.00);
+    ASSERT_EQUALS(round2(roulette_ranges[1]), round2(fitness_values[0]/fitness_sum));
+    ASSERT_EQUALS(round2(roulette_ranges[2]), round2((fitness_values[0]+fitness_values[1])/fitness_sum));
+    ASSERT_EQUALS(round2(roulette_ranges[3]), round2((fitness_values[0]+fitness_values[1]+fitness_values[2])/fitness_sum));
+    ASSERT_EQUALS(round2(roulette_ranges[4]), 1.00);
+    free(roulette_ranges);
+    delete_population(population);
+}
+
+void test_roulette_wheel_select_candidate(void) {
+    Graph graph = build_exemplary_graph();
+    int population_size = 4;
+    Population* population = create_population(&graph, population_size, 0, 0);
+    double * roulette_ranges = generate_roulette(*population);
+
+    int select_counter[] = {0, 0, 0, 0};
+
+    int stat_probe_size = 100000;
+    for(int i=0; i<stat_probe_size; i++) {
+        select_counter[roulette_wheel_select_candidate(*population, roulette_ranges)]++;
+    }
+    double error_margin = 0.03;
+
+    for(int i=0; i<population_size; i++) {
+        ASSERT_EQUALS(is_in_error_margin(roulette_ranges[i+1]-roulette_ranges[i], 1.0*select_counter[i]/stat_probe_size, error_margin), 1);
+    }
+
+
+    free(roulette_ranges);
+    delete_population(population);
 }
 
 void genetic_test(void) {
@@ -126,6 +182,9 @@ void genetic_test(void) {
     TEST(test_mutate);
     TEST(test_reproduce_apply_genetic_operators);
     TEST(test_get_fitness);
+    TEST(test_create_population);
+    TEST(test_generate_roulette);
+    TEST(test_roulette_wheel_select_candidate);
 }
 
 #pragma clang diagnostic pop

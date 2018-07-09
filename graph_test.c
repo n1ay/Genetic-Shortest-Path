@@ -83,6 +83,8 @@ void test_build_exemplary_graph(void) {
     ASSERT_EQUALS(graph.edges[6].to->id, graph.vertices[6].id);
     ASSERT_EQUALS(graph.edges[7].from->id, graph.vertices[5].id);
     ASSERT_EQUALS(graph.edges[7].to->id, graph.vertices[6].id);
+
+    delete_graph(graph);
 }
 
 void graph_test(void) {

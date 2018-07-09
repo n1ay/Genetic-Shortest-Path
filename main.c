@@ -20,8 +20,28 @@ int main(void) {
         tests();
 
     Graph graph = build_exemplary_graph();
-    Population* population = create_population(&graph, 4*2, 0.05, 0.1);
+    Population* population = create_population(&graph, 128, 0, 0);
 
+    double best_fitness = 0;
+    Individual best_individual;
+    int iterations = 1000;
+    Individual individual;
+    double fitness;
+    for (int i = 0; i < iterations; ++i) {
+        individual = get_best_individual(*population);
+        fitness = get_fitness(individual);
+        if(fitness > best_fitness) {
+            best_fitness = fitness;
+            best_individual = individual;
+        }
+        roulette_wheel_reproduction(population);
+    }
+
+    printf("Best path: \n");
+    for (int j = 0; j < population->genome_length; ++j) {
+        printf("%d ", best_individual.genome[j]);
+    }
+    printf("\nBest path length: %lf\n", get_value_from_fitness(best_fitness));
 
     delete_population(population);
     return 0;

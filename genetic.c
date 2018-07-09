@@ -7,13 +7,74 @@
 #include <memory.h>
 #include "genetic.h"
 #include "graph.h"
+#include <string.h>
 
-Individual* roulette_wheel_selection(Population* population) {
-    return NULL;
+double* generate_roulette(Population population) {
+    double fitness_sum = 0;
+    double* individual_fitness = malloc(sizeof(double)*(population.population_size));
+    for(int i=0; i<population.population_size; i++) {
+        individual_fitness[i] = get_fitness(population.individuals[i]);
+        fitness_sum += individual_fitness[i];
+    }
+    double * roulette_ranges = malloc(sizeof(double)*(population.population_size+1));
+    roulette_ranges[0] = 0.0;
+    double accumulated_fitness = 0;
+    for(int i=0; i<population.population_size; i++) {
+        accumulated_fitness += individual_fitness[i]/fitness_sum;
+        roulette_ranges[i+1] = accumulated_fitness;
+    }
+
+    free(individual_fitness);
+    return roulette_ranges;
 }
 
-Individual* roulette_wheel_reproduction(Population* population, Individual* next_generation) {
-    return NULL;
+int roulette_wheel_select_candidate(Population population, const double* roulette_ranges) {
+    double random_number;
+    random_number = 1.0 * randombytes_uniform(INT32_MAX) / INT32_MAX;
+    for(int j=0; j<population.population_size; j++) {
+        if(random_number>roulette_ranges[j] && random_number <= roulette_ranges[j+1])
+            return j;
+    }
+    return population.population_size-1;
+}
+
+int* roulette_wheel_get_parents(Population* population) {
+    double * roulette_ranges = generate_roulette(*population);
+    int* parents = malloc(sizeof(int)*population->population_size/2);
+    int* selected_candidates = malloc(sizeof(int)*population->population_size);
+    memset(selected_candidates, 0, sizeof(int)*population->population_size);
+    for(int i=0; i<population->population_size/2; i++) {
+        int candidate = roulette_wheel_select_candidate(*population, roulette_ranges);
+        while(selected_candidates[candidate]) {
+            candidate = roulette_wheel_select_candidate(*population, roulette_ranges);
+        }
+        selected_candidates[candidate] = 1;
+        parents[i] = candidate;
+    }
+    free(roulette_ranges);
+    free(selected_candidates);
+    return parents;
+}
+
+void roulette_wheel_reproduction(Population* population) {
+    int * parents = roulette_wheel_get_parents(population);
+    int* selected_candidates = malloc(sizeof(int)*population->population_size);
+    memset(selected_candidates, 0, sizeof(int)*population->population_size);
+    for(int i=0; i<population->population_size/2; i++) {
+        selected_candidates[parents[i]] = 1;
+    }
+
+    Individual* children;
+    int i=0;
+    for (int j = 0; j < population->population_size/2; j+=2) {
+        children = reproduce_apply_genetic_operators(population->individuals[j], population->individuals[j+1]);
+        for (int k = 0; k < 2; ++k) {
+            while(selected_candidates[i])
+                i++;
+            free(population->individuals[i].genome);
+            population->individuals[i] = children[k];
+        }
+    }
 }
 
 Individual* reproduce_apply_genetic_operators(Individual individual1, Individual individual2) {
@@ -54,7 +115,7 @@ Individual* reproduce(Individual individual1, Individual individual2, int crosso
 }
 
 int mutate(Individual* individual) {
-    int gene_to_mutate = randombytes_uniform((const uint32_t) ((individual->population)->genome_length));
+    int gene_to_mutate = randombytes_uniform((const uint32_t) ((individual->population)->genome_length-1))+1;
     int new_gene = randombytes_uniform((const uint32_t) ((individual->population)->genome_length));
     while(new_gene == individual->genome[gene_to_mutate])
         new_gene = randombytes_uniform((const uint32_t) ((individual->population)->genome_length));
@@ -103,6 +164,22 @@ double get_fitness(Individual individual) {
     return 1.0/inverse_fitness;
 }
 
+Individual get_best_individual(Population population) {
+    double best_fitness = 0;
+    Individual best_individual = population.individuals[0];
+
+    double fitness;
+    for (int i = 0; i < population.population_size; ++i) {
+        fitness = get_fitness(population.individuals[i]);
+        if(fitness > best_fitness) {
+            best_fitness = fitness;
+            best_individual = population.individuals[i];
+        }
+    }
+
+    return best_individual;
+}
+
 int get_impossible_transition_penalty(Population population) {
     return 10*get_all_weights_sum(*population.graph);
 }
@@ -115,6 +192,10 @@ int get_destination_penalty(Population population) {
     return get_impossible_transition_penalty(population)*population.graph->vertices_number;
 }
 
+double get_value_from_fitness(double fitness) {
+    return (1 - fitness)/fitness;
+}
+
 Individual create_individual(int* genome, Population* population) {
     Individual individual;
     individual.genome = genome;
@@ -122,7 +203,9 @@ Individual create_individual(int* genome, Population* population) {
     return individual;
 }
 
-Population* create_population(Graph* graph, int population_size, float mutation_rate, float crossover_rate) {
+Population* create_population(Graph* graph, int population_size, double mutation_rate, double crossover_rate) {
+    if(population_size%2)
+        fprintf(stderr, "Population size should be divisible by 2");
     Population* population = malloc(sizeof(Population));
     population->graph = graph;
     population->genome_length = graph->vertices_number;
@@ -133,8 +216,13 @@ Population* create_population(Graph* graph, int population_size, float mutation_
     int* genome;
     for(int i=0; i<population_size; i++) {
         genome = malloc(sizeof(int)*population->genome_length);
-        for (int j = 0; j < population->genome_length; ++j) {
-            genome[j] = randombytes_uniform((const uint32_t) population->genome_length);
+        genome[0] = graph->path.id_from;
+        for (int j = 1; j < population->genome_length; ++j) {
+            int gene = randombytes_uniform((const uint32_t) population->genome_length);
+            while (gene == graph->path.id_from)
+                gene = randombytes_uniform((const uint32_t) population->genome_length);
+
+            genome[j] = gene;
         }
         population->individuals[i] = create_individual(genome, population);
     }
